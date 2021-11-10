@@ -5,20 +5,41 @@ using static OpenGL.Gl;
 
 namespace SharpEngine
 {
+
+    struct Vector
+    {
+        public float x, y, z;
+
+        public Vector(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+        
+        public Vector(float x, float y)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = 0;
+        }
+    }
     class Program
     {
-        static float[] vertices = new float[]
+        static Vector[] vertices = new Vector[]
         {
-            -.5f, -.5f, 0f, //Vertex1 (x,y,z)
-            .5f, -.5f, 0f, //vertex2 (x,y,z)
-            0f, .5f, 0f //vertex3(x,y,z)
+            new Vector(-.1f, -.1f), //Vertex1 (x,y,z)
+            new Vector(.1f, -.1f), //vertex2 (x,y,z)
+            new Vector( 0f, .1f), //vertex3(x,y,z)
+            new Vector(.4f, .4f), //Vertex4 (x,y,z)
+            new Vector(.6f, .4f), //vertex5 (x,y,z)
+            new Vector(.5f, .6f)//vertex6(x,y,z)
         };
 
         private const int vertexX = 0;
         private const int vertexY = 1;
         private const int vertexSize = 3;
         static void Main(string[] args) {
-            
             
             var window = CreateWindow();
 
@@ -30,19 +51,20 @@ namespace SharpEngine
             while (!Glfw.WindowShouldClose(window)) {
                 Glfw.PollEvents(); // react to window changes (position etc.)
                 ClearScreen();
-                Render();
-                for (var i = vertexY; i < vertices.Length; i+=vertexSize)
+                Render(window);
+                for (var i = 0; i < vertices.Length; i++)
                 {
-                    vertices[i] += 0.0001f;
+                    vertices[i].x += 0.001f; ///99.99% /-0.01%
                 }
                 UpdateTriangleBuffer();
             }
         }
 
-        private static void Render()
+        private static void Render(Window window)
         {
-            glDrawArrays(GL_TRIANGLES, 0, vertices.Length/vertexSize);
-            glFlush();
+            glDrawArrays(GL_TRIANGLES, 0, vertices.Length);
+            Glfw.SwapBuffers(window);
+            //glFlush();
         }
 
         private static void ClearScreen()
@@ -64,7 +86,7 @@ namespace SharpEngine
             unsafe
             {
                 UpdateTriangleBuffer();
-                glVertexAttribPointer(0, vertexSize, GL_FLOAT, false, vertexSize * sizeof(float), NULL);
+                glVertexAttribPointer(0, vertexSize, GL_FLOAT, false,  sizeof(Vector), NULL);
             }
 
             glEnableVertexAttribArray(0);
@@ -72,9 +94,9 @@ namespace SharpEngine
 
         static unsafe void UpdateTriangleBuffer()
         {
-            fixed (float* vertex = &vertices[0])
+            fixed (Vector* vertex = &vertices[0])
             {
-                glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertices.Length, vertex, GL_STATIC_DRAW);
+                glBufferData(GL_ARRAY_BUFFER, sizeof(Vector) * vertices.Length, vertex, GL_DYNAMIC_DRAW);
             }
 
         }
@@ -108,7 +130,7 @@ namespace SharpEngine
             Glfw.WindowHint(Hint.Decorated, true);
             Glfw.WindowHint(Hint.OpenglProfile, Profile.Core);
             Glfw.WindowHint(Hint.OpenglForwardCompatible, Constants.True);
-            Glfw.WindowHint(Hint.Doublebuffer, Constants.False);
+            Glfw.WindowHint(Hint.Doublebuffer, Constants.True);
 
             //Create and launch a window
             var window = Glfw.CreateWindow(1024, 768, "SharpEngine", Monitor.None, Window.None);
