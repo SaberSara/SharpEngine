@@ -1,8 +1,15 @@
 using System;
+using System.Numerics;
 
 namespace SharpEngine {
 	public struct Vector {
 		public float x, y, z;
+
+		public static Vector Forward => new Vector(0, 1);
+		public static Vector Backward => new Vector(0, -1);
+		public static Vector Left => new Vector(-1, 0);
+		public static Vector Right => new Vector(1, 0);
+		public static Vector Zero => new Vector(0, 0);
 
 		public Vector(float x, float y, float z) {
 			this.x = x;
@@ -49,6 +56,12 @@ namespace SharpEngine {
 
 		public float GetMagnitude() {
 			return MathF.Sqrt(x * x + y * y + z * z);
+		}
+
+		public Vector Normalize() {
+			var magnitude = GetMagnitude();
+			// DO NOT DIVIDE BY ZERO!
+			return magnitude > 0 ? this / GetMagnitude() : this;
 		}
 	}
 }
